@@ -133,7 +133,8 @@ def getCanonical(smiset):
 			molsmi = Chem.MolToSmiles(mol,True)
 			ms.append(molsmi)
 		except:
-			#print(smi)
+			ms.append(smi)
+			print(smi)
 			x=1
 
 	return ms
