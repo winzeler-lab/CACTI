@@ -3,7 +3,7 @@
 # INPUT DETAILS
 usage: cmpSearch.py [-h] -in FILENAME [-outdir STRING] [-jobId STRING]
                     [-p STRING] [-similthreshold INT] [-sep STRING]
-                    [-apincbi STRING] [-all] [-lit] [-simnet] [-simnetf]
+                    [-apincbi STRING] [-all] [-lit] [-simnet]
                     [-pred] [-sdb] [-slit]
 
 Compound Search Pipeline - Winzeler lab
@@ -11,38 +11,39 @@ Compound Search Pipeline - Winzeler lab
 optional arguments:
   -h, --help           show this help message and exit
   -in FILENAME         Input txt file with compound(s) of interest
+  -predin FILENAME     Clustering prediction with custom input file
+  -valin FILENAME      Scaffold similarity with custom input file
   -outdir STRING       PATH to results file
   -jobId STRING        Predefined job ID
   -p STRING            Predefined file name
+  -k STRING            Literature key word search
   -similthreshold INT  Threshold for compound similarity. Number between 0,1
   -sep STRING          Indicate input file separator if other than "\t"
-  -apincbi STRING      Provide NCBI api if available
+  -apincbi STRING      Provide NCBI API, if available
   -all                 Perform every analysis
   -lit                 Obtain literature search for each compound
   -simnet              Obtain similarity network with compound list
-  -simnetf             Obtain similarity network figure
   -pred                Obtain target prediction
   -sdb                 Similarity network with dataset and database search
-  -slit                Obtain literature of similar compounds from database
-                       lookup
-  -k                   Keywords for literature search
+  -slit                Obtain literature of similar compounds from database lookup
+
 
 
 # COMMANDS
 
 # Prediction only
-python3 cmpSearch.py -in FILENAME  -outdir OUTDIR -p PREFIX -pred
+python CACTI.py -in FILENAME  -outdir OUTDIR -p PREFIX -pred
 
 # Similarity network
-python3 cmpSearch.py -in FILENAME -outdir OUTDIR -p PREFIX -simnet
+python CACTI.py -in FILENAME -outdir OUTDIR -p PREFIX -simnet
 
 # All with prefix
-#python3 cmpSearch.py -in cmp_mystery.txt -outdir ./mystery -p mystery
-python3 cmpSearch.py -in FILENAME -outdir ./OUTDIR -p PREFIX
+python CACTI.py -in FILENAME -outdir ./OUTDIR -p PREFIX
 
-                     
-python3 cmpSearch.py -in test/MMV127.txt -outdir ./test -p testMMV127 -pred
+# Close analogs with synonyms and literature
+python CACTI.py -in FILENAME -outdir OUTDIR -simnet  -sdb -slit
 
-python3 cmpSearch.py -in test/MMV127.txt -outdir ./test -p testMMV127 -simnet  -sdb -slit
+# Clustering with custom validation (alternative) set
+python CACTI.py -in FILENAME -outdir . OUTDIR -pred -predin FILENAME_ALTERNATIVE
 
-python3 cmpSearch.py -in test/MMV127_test.txt -outdir ./test -p test_lit -lit
+

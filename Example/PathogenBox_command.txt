@@ -1,0 +1,4 @@
+## Command line command to analyze the Pathogen Box compound list (without reference compounds)
+## Please note commands must be executed where "CACTI.py" is located
+
+python CACTI.py -in Example/mmv374set -outdir Example/ -p MMVexample -sdb
