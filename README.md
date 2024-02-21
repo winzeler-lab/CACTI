@@ -6,17 +6,16 @@ Open-source annotation and target prediction tool that explores some of the larg
 Scripts can be executed using Linux-based command line. Please note that reference folders must be present for CACTI correct execution.
 
 ### Prerequisites
-
-Python			3.0
-xlrd 			1.2
-matplotlib		2.0
-scipy			1.4
-Rdkit			2018.03.4
-networkx			2.3
-numpy			1.15
-pandas			0.23
-requests			2.12
-scikit-learn		0.20
+- Python		3.0
+- xlrd 			1.2
+- matplotlib		2.0
+- scipy			1.4
+- Rdkit			2018.03.4
+- networkx		2.3
+- numpy			1.15
+- pandas		0.23
+- requests		2.12
+- scikit-learn		0.20
 
 
 
