@@ -1,0 +1,48 @@
+Chemical Analysis and Clustering for Target Identification - CACTI tool
+
+The constructed open-source annotation and target prediction tool explores chemical and biological public databases, mining these to obtain a thorough report on common name, synonyms, structurally similar molecules, in addition to chemical clustering analysis against validated drug-targets. Below, are common errors and strategies to overcome them.
+
+Controller errors
+C1 -- FileNotFoundError: [Errno 2] No such file or directory: 'XXX.log'
+Error meaning: Output folder does not exist.
+Solution: Confirm correct output path was provided, or create the output folder/subfolders prior to executing CACTI.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Module 1 (synonyms, literature) errors
+L1 -- Error: HTTP failure: 500 // or related time-request error 
+Error meaning: Time out request. This occurs when the amount/frequency a request is performed to the databases exceed their maximum request limit.
+Solution: Increase the sleep size (getLiterature.py), or split the input query file into two+ files.
+
+L2 -- pj.getBindingDB(smiset[i],1.0) // or related database
+Error meaning: Database inaccessible
+Solution: At times, databases cannot be accessed and processes get interrupted abruptly. To resolve this, 1) uncomment the "data.to_csv()" function (getLiterature.py) to write line-by-line report for large scale query sets, 2) increase sleep size (see L1), or 3) try at a later time
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Module 2 (analogs) errors
+A1 -- Can't kekulize mol.
+Error: Invalid SMILES in query set
+Solution: 1) Provide correct SMILES (indicated in the log file), or 2) remove said SMILES from analysis
+
+A2 -- pj.getChemblSimilPerc(smiset[i],1.0) // or related database
+Error meaning: Database inaccessible
+Solution: Similar to (L2); increase sleep size (getSimilarCompounds.py), or 2) try at a later time
+
+A3 -- requests.exceptions.ConnectionError: HTTPSConnectionPool(host='XXX', port=XX):
+Error meaning: Time out request. This occurs when the amount/frequency a request is performed to the databases exceed their maximum request limit.
+Solution: 1) Increase the sleep size (getSimilarCompounds.py), 2) split the input query file into two+ files, or 3) comment block of database exceeding limits and run at a later time
+
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Module 3 (clustering) errors
+CC1 -- ValueError: Length of values does not match length of index
+Error: Invalid SMILES in query set
+Solution: See (A1) solution
+
+
+
+
+
+
+
