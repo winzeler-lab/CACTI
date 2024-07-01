@@ -22,7 +22,7 @@ Scripts can be executed using Linux-based command line. Please note that referen
 ### Conda environment
 This project can be executed with preinstalled packages, or using a conda environment. To install the Anaconda environment, please type
 ```
-conda env create --file metadata/CACTI-env.txt --name CACTI python=3
+conda env create --file metadata/CACTI-env.yml --name CACTI python=3
 ```
 Activate the directory by typing
 ```
