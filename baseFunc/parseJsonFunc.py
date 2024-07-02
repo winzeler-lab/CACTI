@@ -263,14 +263,23 @@ def getSynonym(cmp,smi):
 	query = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/'+urllib.quote(smi.replace('/','.'))+'/synonyms/json'
 	result = requests.get(query).json()
 
-	# In case SMILES issue but valid, 
-	if('Fault' in result and cmp!=''):
+	# PubChem synonym query
+	if('Fault' in result and cmp!=''): # In case SMILES issue but valid
 		query = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'+urllib.quote(cmp)+'/synonyms/json'
 		result = requests.get(query).json()
 	if (bool(result) and 'InformationList' in result):
 		for item in result['InformationList']['Information']:
 			for syn in item['Synonym']:
+				syn = syn.replace('-',' ').replace('"','').lower()
 				if syn not in syn_list and syn != cmp : syn_list.append(syn)
+
+	# ChEMBL synonym query
+	query = 'https://www.ebi.ac.uk/chembl/api/data/molecule/' + urllib.quote(smi) + '.json'
+	result = requests.get(query).json()
+	if (result and 'molecule_synonyms' in result):
+		for item in result['molecule_synonyms']:
+			syn = item['synonyms'].replace('-',' ').replace('"','').lower()
+			if syn not in syn_list and syn != cmp: syn_list.append(syn)
 
 	return str('\n'.join(syn_list))
 
