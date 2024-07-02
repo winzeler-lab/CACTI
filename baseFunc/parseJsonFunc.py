@@ -1,5 +1,4 @@
 # JSON Parser functions
-# Karla Godinez
 import json
 import urllib.parse as urllib
 import requests
@@ -8,7 +7,8 @@ import re
 
 
 # VARIABLES
-ommitSyn = ['MCULE-','SMR','MLS','AKOS','SR-','HMS','EU','OPERA','OPREA','MAYBRIDGE','ZINC','IDI']
+#ommitSyn = ['MCULE-','SMR','MLS','AKOS','SR-','HMS','EU','OPERA','OPREA','MAYBRIDGE','ZINC','IDI']
+ommitSyn = ['SMR','MLS','SR-','HMS','EU','OPERA','OPREA','IDI']
 
 def getPubchemCID(cmp,smiles):
 	query = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/'+urllib.quote(smiles.replace('/','.'))+'/cids/JSON?MaxRecords=20'
@@ -23,7 +23,6 @@ def getPubchemCID(cmp,smiles):
 		return (' ')
 
 
-
 def getPubmedID(cmp,db,api,keywords):
 	import re
 	full_list = []
@@ -35,11 +34,8 @@ def getPubmedID(cmp,db,api,keywords):
 			
 		if (len(val) == 0):
 			query = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?&retmode=json&db='+db+'&term='+urllib.quote(item)+'+('+' or '.join(keywords)+')'+'&retmax=100'
-			#print(query)
 			if (bool(api)): query += '&api='+api
 			result = requests.get(query).json()
-			#print(result)
-			#print('\n\n\n')
 			if ('esearchresult' in result.keys()):
 				if ('ERROR' not in result['esearchresult'] and int(result['esearchresult']['count'])>0):
 					for id in result['esearchresult']['idlist']:
@@ -51,7 +47,6 @@ def getPubmedID(cmp,db,api,keywords):
 
 	if not full_list: return(' ')
 	return ('\n'.join(full_list))
-	#return (';'.join(full_list))
 
 def getDOI(db,id):
 	import re
@@ -62,8 +57,6 @@ def getDOI(db,id):
 	
 	ind = re.search('doi:',result).start()
 	doi = result[ind : re.search('. ',result[ind:]).start()]
-	print(doi)
-	#doi = ''
 
 	return 	(doi)
 
@@ -71,7 +64,6 @@ def getDOI(db,id):
 def getPubmedID_CID(id):
 	full_list = []
 	ids = []
-	#for item in id.split('\n'):
 	for item in id.split(';'):
 		query = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(item)+'/xrefs/PubMedID/JSON'
 		result = requests.get(query).json()
@@ -87,11 +79,9 @@ def getPubmedID_CID(id):
 def getPatent_CID(id):
 	full_list = []
 	for item in id.split(';'):
-	#for item in id.split('\n'):
 		query = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+str(item)+'/xrefs/PatentID/JSON'
 		result = requests.get(query).json()
 		if (bool(result) and 'InformationList' in result):
-			#print(result['InformationList']['Information'])
 			for cid in result['InformationList']['Information']:
 				for pat in cid['PatentID']:
 					pat = pat.strip()
@@ -113,19 +103,13 @@ def getEBIID(id):
 		if (len(val) == 0):
 			query = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&query='+'"'+str(item)+'"'
 			result = requests.get(query).json()
-			#print(result)
 			if (bool(result) and ('errCode' not in result) and len(result.keys())>1):
 				if(result['hitCount']>0):
 					for i in result['resultList']['result']:
 						if (str(i['id']) not in s for s in full_list): full_list.append((item+'\tPMID'+str(i['id'])+'\t https://pubmed.ncbi.nlm.nih.gov/'+str(i['id']) if str(i['id']).isdigit() else item+'\t'+str(i['id'])))
 
 	return ('\n'.join(full_list))
-	
 
-## NEEDED???
-def getChemblID(id):
-	full_list = []
-	query = 'https://www.ebi.ac.uk/chembl/api/data/chembl_id_lookup/search.json?q='
 
 def getChemblMech(id):
 	full_list = []
@@ -134,7 +118,6 @@ def getChemblMech(id):
 		if (item != ''):
 			query = 'https://www.ebi.ac.uk/chembl/api/data/mechanism.json?limit=100&molecule_chembl_id='+item
 			result = requests.get(query).json()
-			#print(result)
 			if (bool(result) and 'mechanisms' in result):
 				for mec in result['mechanisms']:
 					for mec_id in mec['mechanism_refs']:
@@ -164,8 +147,7 @@ def getChemblLit(id):
 		if (item != ''):
 			query = 'https://www.ebi.ac.uk/chembl/api/data/compound_record.json?limit=100&molecule_chembl_id='+item
 			result = requests.get(query).json()
-			#print(result)
-			#print('\n\n\n')
+
 			if (bool(result) and 'compound_records' in result):
 				for id in result['compound_records']:
 					if (id['document_chembl_id'] not in ids):
@@ -176,46 +158,15 @@ def getChemblLit(id):
 	return('\n'.join(full_list))
 
 
-def getBindingDB_old(smi,simil):
-	query = 'http://www.bindingdb.org/axis2/services/BDBService/getTargetByCompound?smiles=' + urllib.quote(str(smi)) \
-			+ '&cutoff=' + str(simil) + '&response=application/json'
-	result = requests.get(query).json()
-	full_list = []
-
-	if (bool(result) and 'bdb.getTargetByCompoundResponse' in result):  # If correct smiles
-		if (result['bdb.getTargetByCompoundResponse']['bdb.hit'] > 0):  # If hits found
-			full_list = []
-			ids = []
-			#print("\nR: ",result)
-			#print('\nRAff',result['bdb.getTargetByCompoundResponse']['bdb.affinities'])
-
-
-			if type(result['bdb.getTargetByCompoundResponse']['bdb.affinities']) != list:
-				result['bdb.getTargetByCompoundResponse']['bdb.affinities'] = [result['bdb.getTargetByCompoundResponse']['bdb.affinities']]
-
-			for item in result['bdb.getTargetByCompoundResponse']['bdb.affinities']:
-				if item['bdb.inhibitor'] + item['bdb.target'] not in ids:
-					key = item['bdb.inhibitor'] + '\t' + item['bdb.target']
-					ids.append(key)
-					full_list.append(item['bdb.inhibitor'] + '\t' + item['bdb.species'] + '\t' + 'Target:' +item['bdb.target'] + '\t' + 'Tanimoto similarity:' + item['bdb.tanimoto'])
-	if full_list:
-		return('\n'.join(full_list))
-	else:
-		return('')
-
-
 def getBindingDB(smi, simil):
 	query = 'http://www.bindingdb.org/axis2/services/BDBService/getTargetByCompound?smiles=' + urllib.quote(str(smi)) \
 			+ '&cutoff=' + str(simil) + '&response=application/json'
 	result = requests.get(query).json()
 	full_list = []
-	#print(result)
 	if (bool(result) and 'bdb.getTargetByCompoundResponse' in result):  # If correct smiles
 		if (result['bdb.getTargetByCompoundResponse']['bdb.hit'] > 0):  # If hits found
 			full_list = []
 			ids = []
-			# print("\nR: ",result)
-			# print('\nRAff',result['bdb.getTargetByCompoundResponse']['bdb.affinities'])
 
 			if type(result['bdb.getTargetByCompoundResponse']['bdb.affinities']) != list:
 				result['bdb.getTargetByCompoundResponse']['bdb.affinities'] = [
@@ -249,7 +200,6 @@ def getBindingDBSimil(smi,simil):
 				full_list.append([item['bdb.inhibitor'], item['bdb.smiles']])
 		elif (result['bdb.getTargetByCompoundResponse']['bdb.hit'] > 1):  # If hits found
 			for item in result['bdb.getTargetByCompoundResponse']['bdb.affinities']:
-				#print(result['bdb.getTargetByCompoundResponse']['bdb.affinities'])
 				if item['bdb.inhibitor'] + item['bdb.smiles'] not in ids:
 					key = item['bdb.inhibitor'] + '\t' + item['bdb.smiles']
 					ids.append(key)
@@ -264,23 +214,22 @@ def getChemblSmiID(smi,simil_perc):
 	ids = []
 	query = 'https://www.ebi.ac.uk/chembl/api/data/similarity/'+urllib.quote(smi)+'/'+str(simil_perc)+'.json'
 	result = requests.get(query).json()
-	#print(result)
+
 	if (bool(result) and 'molecules' in result):
 		for mol in result['molecules']:
 			if mol['molecule_chembl_id'] not in ids: ids.append(mol['molecule_chembl_id'])
-		#print(result['molecule_hierarchy'])
-	#return (str(';'.join(ids)))
+
 	return (str('\n'.join(ids)))
 
 
 
 def getChemblSimilPerc(smi,treshold_simil):
-	#[mol ID,canonical smiles, similarity percentage]
+	#Structure [mol ID,canonical smiles, similarity percentage]
 	pairs = []
 
 	query= 'https://www.ebi.ac.uk/chembl/api/data/similarity/'+urllib.quote(smi)+'/'+str(treshold_simil)+'.json'
 	result = requests.get(query).json()
-	#print(result)
+
 	if (bool(result) and 'molecules' in result):
 		for mol in result['molecules']:
 
@@ -291,7 +240,7 @@ def getChemblSimilPerc(smi,treshold_simil):
 def getCIDSmiles(cid):
 	query='https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'+urllib.quote(str(cid))+'/property/IsomericSmiles/JSON'
 	result = requests.get(query).json()
-	#print(result) UNCOMMENTED
+	#id = result['PropertyTable']['Properties'][0]['IsomericSMILES'] # To obatin SMILES (potential duplication between CID SMILES, uncomment this line
 	id = result['PropertyTable']['Properties'][0]['IsomericSMILES']
 
 	return(id)
@@ -300,7 +249,7 @@ def getCIDSmiles(cid):
 def getPubChemSubstructure(smi,treshold_simil):
 	#[mol ID,canonical smiles]
 	substruc = []
-	#query= 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsubstructure/smiles/'+urllib.quote(smi)+'/cids/JSON?Threshold='+str(treshold_simil)+'&MaxRecords=100'
+	# Limit to return 100 analogs per search, this number can be increased if desired
 	query= 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity_2d/smiles/'+urllib.quote(smi)+'/cids/JSON?Threshold='+str(treshold_simil)+'&MaxRecords=100'
 	result = requests.get(query).json()
 	if (bool(result) and 'IdentifierList' in result):
@@ -332,9 +281,7 @@ def getMW(smi):
 	result = requests.get(query).json()
 	if (bool(result) and 'PropertyTable' in result):
 		result = result['PropertyTable']['Properties'][0]
-		#print(result)
 		return (str(result['MolecularWeight']))
-		#return (str(result['PropertyTable']['Properties']['MolecularWeight']))
 	else:
 		return('')
 
