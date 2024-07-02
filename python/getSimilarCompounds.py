@@ -13,6 +13,8 @@ import networkx as nx
 import numpy as np
 from rdkit import DataStructs
 
+from time import sleep
+
 api_ncbi = ''
 keywords = ''
 
@@ -65,7 +67,7 @@ def getNetwork(type,prefix,infile,path_output,sep,treshold_simil,sim_conf):
 	if pairs:
 		for p in pairs:
 			s = pd.Series([p[0],p[1],str(float(p[2])*100)],index=df_head)
-			df = df.append(s,ignore_index=True)
+			df = df._append(s,ignore_index=True)
 	pairs_all = pairs #structure to save pairs of similar compounds, in case database search is selected
 
 	# Find database close analogs, and calculate/obtain similarities
@@ -79,7 +81,7 @@ def getNetwork(type,prefix,infile,path_output,sep,treshold_simil,sim_conf):
 			if pairs:
 				for p in pairs:
 					s = pd.Series([cmp_name[i],p[0],p[2]],index=df_head)
-					df = df.append(s,ignore_index=True)
+					df = df._append(s,ignore_index=True)
 					db_cmp_smi[p[0]] = p[1] #Save found compound's smiles
 					pairs_all.append([cmp_name[i],p[0],p[2]])
 
@@ -91,7 +93,7 @@ def getNetwork(type,prefix,infile,path_output,sep,treshold_simil,sim_conf):
 					#simil_percentage = treshold_simil*100  # Fingerprint similarity checkup
 					if (simil_percentage >= treshold_simil*100 and simil_percentage < 100):
 						pair = pd.Series([cmp_name[i],'CID '+str(s[0]),simil_percentage],index=df_head)
-						df = df.append(pair,ignore_index=True)
+						df = df._append(pair,ignore_index=True)
 						db_cmp_smi['CID '+str(s[0])] = pj.getCIDSmiles(str(s[0]))
 						pairs_all.append([cmp_name[i],'CID '+str(s[0]),simil_percentage])
 
@@ -102,7 +104,7 @@ def getNetwork(type,prefix,infile,path_output,sep,treshold_simil,sim_conf):
 					simil_percentage = mol.similPercentSmiles(cmp_smi[i], s[1])  # Fingerprint similarity checkup
 					if (simil_percentage >= treshold_simil * 100 and simil_percentage < 100):
 						pair = pd.Series([cmp_name[i], str(s[0]), simil_percentage], index=df_head)
-						df = df.append(pair, ignore_index=True)
+						df = df._append(pair, ignore_index=True)
 						db_cmp_smi[str(s[0])] = s[1]
 						pairs_all.append([cmp_name[i], str(s[0]), simil_percentage])
 			sleep(4)  # Request time lag controller
@@ -128,11 +130,11 @@ def getNetwork(type,prefix,infile,path_output,sep,treshold_simil,sim_conf):
 		## Compounds from dataset
 		for i in range(len(cmp_name)):
 			s = pd.Series([cmp_name[i], cmp_smi[i], cmp_smi[i], 'dataset'], index=dfn_head)
-			df_nodes = df_nodes.append(s,ignore_index=True)
+			df_nodes = df_nodes._append(s,ignore_index=True)
 		## Compounds from database
 		for key,val in db_cmp_smi.items():
 			s = pd.Series([key,'',val,'database'],index=dfn_head)
-			df_nodes = df_nodes.append(s,ignore_index=True)
+			df_nodes = df_nodes._append(s,ignore_index=True)
 
 		# Generate report
 		df['Simil'] = df['Simil'].astype(float)
